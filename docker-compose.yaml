@@ -1,0 +1,35 @@
+services:
+  beyla-raw:
+    image: "redis:7.4.2"
+    command: --port 26300
+    container_name: beyla-raw
+    ports:
+      - "26300:26300"
+
+  beyla-explore:
+    image: "redis:7.4.2"
+    command: --port 26305
+    container_name: beyla-explore
+    ports:
+      - "26305:26305"
+
+  beyla-visited:
+    image: "redis:7.4.2"
+    command: --port 26303
+    container_name: beyla-visited
+    ports:
+      - "26303:26303"
+
+
+  beyla-processed:
+    image: "redis:7.4.2"
+    command: --port 26301
+    container_name: beyla-processed
+    ports:
+      - "26301:26301"
+
+  beyla-data:
+    image: "mongo:8.0.10-rc0-noble"
+    container_name: beyla-data
+    ports:
+      - "27017:27017"

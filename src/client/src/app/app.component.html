@@ -1,0 +1,14 @@
+<div class="search-container">
+  <h1>{{ title }}</h1>
+  <div class="search-box">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Entrez votre recherche ici...">
+    <button (click)="search()">Rechercher</button>
+  </div>
+  <span>Temps de la requête:{{ timeTaken }}</span>
+  <div *ngFor="let result of results">
+    <h3>{{ result.title }}</h3>
+    <a href="{{ result.url }}" target="_blank" >{{ result.url }}</a>
+    <span>{{ result.indexed_at }}</span>
+    <i>//{{ result.score }}</i>
+  </div>
+</div>
