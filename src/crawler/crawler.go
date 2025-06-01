@@ -62,7 +62,7 @@ func main() {
 
 func routine(rexplore *redis.Client, rraw *redis.Client, rvisited *redis.Client, ctx context.Context, gc gcache.Cache) {
 	for true {
-		url, err := rexplore.RPop(ctx, "queue").Result()
+		url, err := rexplore.SPop(ctx, "queue").Result()
 		if err != nil {
 			fmt.Print(".")
 			time.Sleep(time.Second)
@@ -75,7 +75,7 @@ func routine(rexplore *redis.Client, rraw *redis.Client, rvisited *redis.Client,
 	}
 }
 
-func crawler(url string, ctx context.Context, craw *redis.Client, cvisited *redis.Client) {
+func crawler(url string, ctx context.Context, rraw *redis.Client, rvisited *redis.Client) {
 
 	c := colly.NewCollector()
 	page := &Page{}
@@ -89,11 +89,11 @@ func crawler(url string, ctx context.Context, craw *redis.Client, cvisited *redi
 		page.Text = h.Text
 		m, _ := json.Marshal(page)
 		fmt.Println("Scrapping:", page.Url)
-		_, err1 := cvisited.LPush(ctx, "queue", url).Result()
+		_, err1 := rvisited.SAdd(ctx, "queue", url).Result()
 		if err1 != nil {
 			panic(err1)
 		}
-		_, err2 := craw.LPush(ctx, "queue", m).Result()
+		_, err2 := rraw.LPush(ctx, "queue", m).Result()
 		if err2 != nil {
 			panic(err2)
 		}

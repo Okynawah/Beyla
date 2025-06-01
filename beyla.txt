@@ -11,29 +11,37 @@ Crawler
 go
 LRU
 https://github.com/bluele/gcache
-https://ngxui.com/
+go run .
 
 Stop words: https://raw.githubusercontent.com/stopwords-iso/stopwords-fr/refs/heads/master/stopwords-fr.txt
 Indexer
 python
 // TODO trouver une solution pour qrimprimerexportercréer
-
+python3 indexer.py
 
 Outlink
 go
-
+// TODO mettre les whitelist et blacklist dans des fichiers txt
+go run .
 
 Client
-Spring
+Angular
+https://ngxui.com/
+pnpm start
 
+Query server
+Spring
+mvn clean package spring-boot:repackage
+java -jar target/query-1.0-SNAPSHOT.jar
 
 
 
 redis-cli -p 26300 --scan --pattern '*' | xargs -L 1 redis-cli -p 26300 DUMP
 redis-cli -p 26305 --scan --pattern '*' | xargs -L 1 redis-cli -p 26305 DUMP
 docker exec -it 9 /bin/bash
-redis-cli -p 26305 LPUSH queue "https://fr.wikipedia.org/wiki/Brunissage"
-redis-cli -p 26300 LPUSH queue "https://fr.wikipedia.org/wiki/Brunissage"
+redis-cli -p 26305 SADD queue "https://fr.wikipedia.org/wiki/Brunissage"
+
+
 
 mongosh
 use indexation

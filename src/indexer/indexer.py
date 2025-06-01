@@ -62,14 +62,24 @@ def main():
             data = json.loads(value)
             print("Indexing:" + data.get("Url"))
             result_dict = process_data(data, weights, stopwords)
-            mData.insert_one({
-                "url": data.get("Url"),
+            mSiteData = {
                 "title": data.get("Title"),
                 "keywords": result_dict,
                 "description": "",
                 "indexed_at": datetime.utcnow(),
-                "backlink": 0
-            })
+            }
+            result = mData.update_one(
+                {"url": data.get("Url")}, 
+                {
+                    "$set": mSiteData,
+                },
+                upsert=True
+            )
+            if result.upserted_id:
+                mData.update_one(
+                    {"_id": result.upserted_id},
+                    {"$set": {"backlink": 1}}
+                )
             rprocessed.sadd("queue", json.dumps({"url": data["Url"], "outlink": data["Outlink"]}))
 
         except json.JSONDecodeError as e:

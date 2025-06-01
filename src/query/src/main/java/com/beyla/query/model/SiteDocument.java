@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.beyla.query.service.QueryService.BACKLINK_WEIGHT_COEF;
+import static com.beyla.query.service.QueryService.MATCHES_WEIGHT_COEF;
 
 @Document(collection = "windex")
 public class SiteDocument implements CustomComparable<SiteDocument> {
@@ -114,24 +115,22 @@ public class SiteDocument implements CustomComparable<SiteDocument> {
 
     @Override
     public int compareTo(SiteDocument object, List<String> context) {
-        int objectMatches = 0;
-        int objectWeight = 0;
-        int currentMatches = 0;
-        int currentWeight = 0;
+        ScoreAttribution currentScore = getScoreAttribution(this, context);
 
-        if (this.score == null) {
-            for (String keyword : context) {
-                if (this.keywords.containsKey(keyword)) {
-                    currentWeight += this.keywords.get(keyword);
-                    currentMatches += 1;
-                }
-            }
-            currentWeight *= this.backlink * BACKLINK_WEIGHT_COEF;
-            this.setScore(currentWeight);
+        ScoreAttribution objectScore = getScoreAttribution(object, context);
 
-        } else {
-            currentWeight = this.score;
+        if (objectScore.matches == currentScore.matches)
+            return (int) (objectScore.weight - currentScore.weight);
+        else if (objectScore.matches > currentScore.matches) {
+            return 1;
+        } else { // matches < currentMatches
+            return -1;
         }
+    }
+
+    private static ScoreAttribution getScoreAttribution(SiteDocument object, List<String> context) {
+        int objectMatches = 0;
+        double objectWeight = 0;
 
         if (object.score == null) {
             for (String keyword : context) {
@@ -140,20 +139,17 @@ public class SiteDocument implements CustomComparable<SiteDocument> {
                     objectMatches += 1;
                 }
             }
-            currentWeight *= object.backlink * BACKLINK_WEIGHT_COEF;
-            object.setScore(objectWeight);
-
+            objectWeight *= (object.backlink + 1) * BACKLINK_WEIGHT_COEF;
+            objectWeight *= objectMatches * MATCHES_WEIGHT_COEF;
+            object.setScore((int) objectWeight);
         } else {
             objectWeight = object.score;
         }
+        ScoreAttribution objectScore = new ScoreAttribution(objectMatches, objectWeight);
+        return objectScore;
+    }
 
-        if (objectMatches == currentMatches)
-            return objectWeight - currentWeight;
-        else if (objectMatches > currentMatches) {
-            return 1;
-        } else { // objectMatches < currentMatches
-            return -1;
-        }
+    private record ScoreAttribution(int matches, double weight) {
     }
 
     @Override

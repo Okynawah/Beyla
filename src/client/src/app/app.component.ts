@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Site } from './Site';
 import { QueryService } from './query.service';
+import { StatsService } from './stats.service';
+import { ServerStats } from './ServerStats';
 
 @Component({
   selector: 'app-root',
@@ -11,12 +13,15 @@ import { QueryService } from './query.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  stats?: ServerStats;
   searchQuery: string = '';
   timeTaken: number = 0;
   title: string = 'Beyla';
   results: Site[] = [{ title: "test", url: "", indexed_at: Date.now(), description: "", score: 0 }];
 
-  constructor(private queryService: QueryService) { }
+  constructor(private queryService: QueryService, private statsService: StatsService) { 
+    this.statsRefresh()
+  }  
 
   async search() {
     if (this.searchQuery) {
@@ -26,5 +31,9 @@ export class AppComponent {
       let endTime = Date.now()
       this.timeTaken = endTime - startTime
     }
+  }
+
+  async statsRefresh() {
+    this.statsService.getStats().then(a => {this.stats = a; console.log(a); console.log(this.stats)})
   }
 }

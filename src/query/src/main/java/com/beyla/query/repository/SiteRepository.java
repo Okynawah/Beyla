@@ -1,4 +1,4 @@
-package com.beyla.query.service;
+package com.beyla.query.repository;
 
 import com.beyla.query.model.SiteDocument;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,4 +27,7 @@ public class SiteRepository  {
         return mongoTemplate.find(query, SiteDocument.class);
     }
 
+    public long countDocuments() {
+        return mongoTemplate.estimatedCount("windex");
+    }
 }

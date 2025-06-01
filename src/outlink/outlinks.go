@@ -67,7 +67,7 @@ func main() {
 	}()
 	mData := mDataClient.Database("indexation").Collection("windex")
 	whitelist := []string{"fr.wikipedia.org"}
-	blacklist := []string{"Discussion_utilisateur", "Utilisateur:", ":Contributions", "wikipedia.org/w/index.php?title=", "wikipedia.org/wiki/Spécial:", "wikipedia.org/wiki/Sp%C3%A9cial", "wikipedia.org/wiki/Wikipédia:"}
+	blacklist := []string{"Discussion_utilisateur", "Utilisateur:", ":Contributions", "wikipedia.org/w/index.php?title=", "wikipedia.org/wiki/Spécial:", "wikipedia.org/wiki/Sp%C3%A9cial", "wikipedia.org/wiki/Wikipédia:", "wikipedia.org/wiki/Fichier:"}
 
 	for true {
 		fmt.Print(".")
@@ -97,26 +97,26 @@ func main() {
 		fmt.Print("Found: " + strconv.Itoa(len(blacklistedOutlinks)) + " outlinks from: " + queueOutlink.URL + "\n")
 
 		for _, outlink := range blacklistedOutlinks {
-			existsVisited, err := rvisited.Exists(ctx, outlink).Result()
+			existsVisited, err := rvisited.SIsMember(ctx, "queue", outlink).Result()
 			if err != nil {
 				fmt.Println("Erreur redis visited:", err)
 				continue
 			}
-			if existsVisited > 0 {
+			if existsVisited == true {
 				updateDataWeight(mData, outlink, ctx)
 				continue
 			}
-			existsExplore, err := rexplore.Exists(ctx, outlink).Result()
+			existsExplore, err := rexplore.SIsMember(ctx, "queue", outlink).Result()
 			if err != nil {
 				fmt.Println("Erreur redis visited:", err)
 				continue
 			}
-			if existsExplore > 0 {
+			if existsExplore == true {
 				updateDataWeight(mData, outlink, ctx)
 				continue
 			}
 
-			_, err2 := rexplore.LPush(ctx, "queue", outlink).Result()
+			_, err2 := rexplore.SAdd(ctx, "queue", outlink).Result()
 			if err2 != nil {
 				panic(err2)
 			}
@@ -205,8 +205,9 @@ func updateDataWeight(mData *mongo.Collection, url string, ctx context.Context) 
 			"backlink": 1,
 		},
 	}
+	opts := options.UpdateOne().SetUpsert(true)
 
-	_, err := mData.UpdateOne(ctx, filter, update)
+	_, err := mData.UpdateOne(ctx, filter, update, opts)
 	if err != nil {
 		log.Fatal("Failed to update backlink")
 	}

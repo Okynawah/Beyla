@@ -39,11 +39,12 @@ public class QueryController {
             return new PageImpl<>(List.of(), Pageable.ofSize(1).withPage(0), 0);
         if (search.size() == 1) { // special case because score attribution is on sort
             SiteDocument singleSiteDocument = search.get(0);
-            singleSiteDocument.setScore(0);
+            singleSiteDocument.setScore(1);
             return new PageImpl<>(List.of(SiteRest.from(singleSiteDocument)), Pageable.ofSize(1).withPage(1), 1);
         }
         List<SiteDocument> sort = queryService.sort(search, queryKeywords);
-        List<SiteDocument> bestResults = queryService.bestResults(sort);
+        List<SiteDocument> crossQuery = queryService.crossQuery(sort, queryKeywords);
+        List<SiteDocument> bestResults = queryService.bestResults(crossQuery);
         return new PageImpl<>(bestResults.stream().map(SiteRest::from).toList(), Pageable.ofSize(size).withPage(page), size);
     }
 

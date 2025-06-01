@@ -1,3 +1,7 @@
+<div>
+    <button (click)="statsRefresh()">refresh</button>
+      <span>&nbsp;Links to explore: {{ stats!.exploreEntries }}</span>&nbsp;<span>Page prepared: {{ stats!.rawEntries }}</span>&nbsp;<span>Page indexed: {{ stats!.visitedEntries }}</span>
+</div>
 <div class="search-container">
   <h1>{{ title }}</h1>
   <div class="search-box">

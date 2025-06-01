@@ -5,6 +5,5 @@ import java.util.List;
 public interface CustomComparable<T> {
     public void setScore(Integer score);
     public int compareTo(T object, List<String> context);
-
-    Integer getScore();
+    public Integer getScore();
 }
