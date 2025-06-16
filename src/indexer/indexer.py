@@ -4,6 +4,7 @@ import json
 import re
 from pymongo import MongoClient
 from datetime import datetime
+from dotenv import dotenv_values, find_dotenv
 
 def is_valid_word(word):
     return not (re.search(r'[a-zA-Z]', word) and re.search(r'[0-9]', word))
@@ -15,7 +16,6 @@ def process_data(data, weights, stopwords):
     for index, weight in weights.items():
         headers = data.get(index, [])
         for header in headers:
-            update_dict(result_dict, header, weight)
             headerWords = header.split(' ')
             if len(headerWords) > 1:
                 for word in headerWords:
@@ -42,9 +42,14 @@ def update_dict(dictionary, word, weight):
         dictionary[key] = weight
 
 def main():
-    rraw = redis.Redis(host='localhost', port=26300, decode_responses=True)
-    rprocessed = redis.Redis(host='localhost', port=26301, decode_responses=True)
-    mData = MongoClient("mongodb://localhost:27017/")["indexation"]["windex"]
+    if find_dotenv("../../.local.env"):
+        dotenv = dotenv_values("../../.local.env")
+    else: 
+        dotenv = dotenv_values(".env")
+        
+    rraw = redis.Redis(host=dotenv.get("BEYLA_RAW"), port=dotenv.get("BEYLA_RAW_PORT"), decode_responses=True)
+    rprocessed = redis.Redis(host=dotenv.get("BEYLA_PROCESSED"), port=dotenv.get("BEYLA_PROCESSED_PORT"), decode_responses=True)
+    mData = MongoClient("mongodb://" + dotenv.get("BEYLA_DATA") + ":" + dotenv.get("BEYLA_DATA_PORT") + "/")["indexation"]["windex"]
     stopwords = open("stopwords-fr.txt").read().split()
 
     weights = {"H1": 5, "H2": 3, "H3": 2, "H4": 1, "H5": 1, "H6": 1}

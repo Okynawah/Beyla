@@ -17,7 +17,7 @@ export class AppComponent {
   searchQuery: string = '';
   timeTaken: number = 0;
   title: string = 'Beyla';
-  results: Site[] = [{ title: "test", url: "", indexed_at: Date.now(), description: "", score: 0 }];
+  results: Site[] = [];
 
   constructor(private queryService: QueryService, private statsService: StatsService) { 
     this.statsRefresh()

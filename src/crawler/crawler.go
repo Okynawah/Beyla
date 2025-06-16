@@ -8,10 +8,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/bluele/gcache"
 	"github.com/gocolly/colly"
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"github.com/temoto/robotstxt"
 )
@@ -33,24 +35,25 @@ var UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (K
 
 func main() {
 	fmt.Println("Crawler start...")
+	_ = godotenv.Load("../../.local.env")
 	ctx := context.Background()
 	gc := gcache.New(50).LRU().Build()
 	rraw := redis.NewClient(&redis.Options{
-		Addr:     "localhost:26300",
+		Addr:     os.Getenv("BEYLA_RAW") + ":" + os.Getenv("BEYLA_RAW_PORT"),
 		Password: "", // No password set
 		DB:       0,  // Use default DB
 		Protocol: 2,  // Connection protocol
 	})
 
 	rexplore := redis.NewClient(&redis.Options{
-		Addr:     "localhost:26305",
+		Addr:     os.Getenv("BEYLA_EXPLORE") + ":" + os.Getenv("BEYLA_EXPLORE_PORT"),
 		Password: "", // No password set
 		DB:       0,  // Use default DB
 		Protocol: 2,  // Connection protocol
 	})
 
 	rvisited := redis.NewClient(&redis.Options{
-		Addr:     "localhost:26303",
+		Addr:     os.Getenv("BEYLA_VISITED") + ":" + os.Getenv("BEYLA_VISITED_PORT"),
 		Password: "", // No password set
 		DB:       0,  // Use default DB
 		Protocol: 2,  // Connection protocol

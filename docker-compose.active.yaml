@@ -1,0 +1,77 @@
+services:
+  beyla-crawler:
+    build: 
+        context: .
+        dockerfile: ./src/crawler/Dockerfile 
+    image: beyla-crawler:latest
+    container_name: beyla-crawler
+    env_file:
+      - .env
+    networks:
+      - beyla-backend
+
+  beyla-indexer:
+    build: 
+        context: .
+        dockerfile: ./src/indexer/Dockerfile 
+    image: beyla-indexer:latest
+    container_name: beyla-indexer
+    networks:
+      - beyla-backend
+
+  beyla-outlink:
+    build: 
+        context: .
+        dockerfile: ./src/outlink/Dockerfile 
+    image: beyla-outlink:latest
+    container_name: beyla-outlink
+    env_file:
+      - .env
+    networks:
+      - beyla-backend
+
+  beyla-raw:
+    image: "redis:7.4.2"
+    command: --port 26300
+    container_name: beyla-raw
+    networks:
+      - beyla-backend
+
+  beyla-explore:
+    image: "redis:7.4.2"
+    command: --port 26305
+    container_name: beyla-explore
+    networks:
+      - beyla-backend
+
+  beyla-visited:
+    image: "redis:7.4.2"
+    command: --port 26303
+    container_name: beyla-visited
+    networks:
+      - beyla-backend
+
+
+  beyla-processed:
+    image: "redis:7.4.2"
+    command: --port 26301
+    container_name: beyla-processed
+    networks:
+      - beyla-backend
+
+  beyla-data:
+    image: "mongo:8.0.10-rc0-noble"
+    container_name: beyla-data
+    volumes:
+      - beyla_data_volume:/data/db
+    networks:
+      - beyla-backend
+
+volumes:
+  beyla_data_volume:
+
+networks:
+  beyla-frontend:
+    driver: bridge
+  beyla-backend:
+    driver: bridge

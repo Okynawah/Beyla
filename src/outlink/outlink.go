@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -36,29 +38,31 @@ type QueueOutlink struct {
 
 func main() {
 	fmt.Println("Searching for outlinks...")
+	_ = godotenv.Load("../../.local.env")
 	ctx := context.Background()
 
 	rprocessed := redis.NewClient(&redis.Options{
-		Addr:     "localhost:26301",
+		Addr:     os.Getenv("BEYLA_PROCESSED") + ":" + os.Getenv("BEYLA_PROCESSED_PORT"),
 		Password: "", // No password set
 		DB:       0,  // Use default DB
 		Protocol: 2,  // Connection protocol
 	})
 
 	rexplore := redis.NewClient(&redis.Options{
-		Addr:     "localhost:26305",
+		Addr:     os.Getenv("BEYLA_EXPLORE") + ":" + os.Getenv("BEYLA_EXPLORE_PORT"),
 		Password: "", // No password set
 		DB:       0,  // Use default DB
 		Protocol: 2,  // Connection protocol
 	})
 
 	rvisited := redis.NewClient(&redis.Options{
-		Addr:     "localhost:26303",
+		Addr:     os.Getenv("BEYLA_VISITED") + ":" + os.Getenv("BEYLA_VISITED_PORT"),
 		Password: "", // No password set
 		DB:       0,  // Use default DB
 		Protocol: 2,  // Connection protocol
 	})
-	mDataClient, _ := mongo.Connect(options.Client().ApplyURI("mongodb://localhost:27017"))
+
+	mDataClient, _ := mongo.Connect(options.Client().ApplyURI("mongodb://" + os.Getenv("BEYLA_DATA") + ":" + os.Getenv("BEYLA_DATA_PORT")))
 
 	defer func() {
 		if err := mDataClient.Disconnect(ctx); err != nil {
@@ -67,7 +71,7 @@ func main() {
 	}()
 	mData := mDataClient.Database("indexation").Collection("windex")
 	whitelist := []string{"fr.wikipedia.org"}
-	blacklist := []string{"Discussion_utilisateur", "Utilisateur:", ":Contributions", "wikipedia.org/w/index.php?title=", "wikipedia.org/wiki/Spécial:", "wikipedia.org/wiki/Sp%C3%A9cial", "wikipedia.org/wiki/Wikipédia:", "wikipedia.org/wiki/Fichier:"}
+	blacklist := []string{"Discussion_utilisateur", "Utilisateur:", ":Contributions", "wikipedia.org/w/index.php?title=", "wikipedia.org/wiki/Spécial:", "wikipedia.org/wiki/Sp%C3%A9cial", "wikipedia.org/wiki/Wikipédia:", "wikipedia.org/wiki/Fichier:", "wikipedia.org/wiki/Portail:", "Wikipédia:Sondage"}
 
 	for true {
 		fmt.Print(".")

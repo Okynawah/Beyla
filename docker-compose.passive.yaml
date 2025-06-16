@@ -1,0 +1,63 @@
+services:
+  beyla-nginx:
+    build: ./src/proxy
+    image: beyla-nginx:latest
+    container_name: beyla-nginx
+    ports:
+      - "8888:80"
+    depends_on:
+      - beyla-query
+      - beyla-client
+    networks:
+    - beyla-frontend
+    - beyla-backend
+
+  beyla-client:
+    build: ./src/client
+    image: beyla-client:latest
+    container_name: beyla-client
+    networks:
+      - beyla-frontend
+      - beyla-backend
+
+  beyla-query:
+    build: 
+        context: .
+        dockerfile: ./src/query/Dockerfile 
+    image: beyla-query:latest
+    container_name: beyla-query
+    env_file:
+      - .env
+    networks:
+      - beyla-backend
+
+  beyla-explore:
+    image: "redis:7.4.2"
+    command: --port 26305
+    container_name: beyla-explore
+    networks:
+      - beyla-backend
+
+  beyla-visited:
+    image: "redis:7.4.2"
+    command: --port 26303
+    container_name: beyla-visited
+    networks:
+      - beyla-backend
+
+  beyla-data:
+    image: "mongo:8.0.10-rc0-noble"
+    container_name: beyla-data
+    volumes:
+      - beyla_data_volume:/data/db
+    networks:
+      - beyla-backend
+
+volumes:
+  beyla_data_volume:
+
+networks:
+  beyla-frontend:
+    driver: bridge
+  beyla-backend:
+    driver: bridge

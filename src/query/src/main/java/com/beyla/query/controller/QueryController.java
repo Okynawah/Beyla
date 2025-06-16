@@ -34,7 +34,9 @@ public class QueryController {
                                     @RequestParam(name = "p", defaultValue = "1") @Positive int page,
                                     @RequestParam(name = "s", defaultValue = "10") @Min(5) @Max(1000) int size) {
         List<String> queryKeywords = List.of(query.split(" "));
+        long queryBefore = System.currentTimeMillis();
         List<SiteDocument> search = queryService.search(queryKeywords, page, size);
+        long queryAfter = System.currentTimeMillis();
         if (search.isEmpty())
             return new PageImpl<>(List.of(), Pageable.ofSize(1).withPage(0), 0);
         if (search.size() == 1) { // special case because score attribution is on sort
@@ -45,6 +47,10 @@ public class QueryController {
         List<SiteDocument> sort = queryService.sort(search, queryKeywords);
         List<SiteDocument> crossQuery = queryService.crossQuery(sort, queryKeywords);
         List<SiteDocument> bestResults = queryService.bestResults(crossQuery);
+        long filterAfter = System.currentTimeMillis();
+
+        System.out.println("Query: " + (queryAfter - queryBefore) + "ms");
+        System.out.println("Filter: " + (filterAfter - queryAfter) + "ms");
         return new PageImpl<>(bestResults.stream().map(SiteRest::from).toList(), Pageable.ofSize(size).withPage(page), size);
     }
 

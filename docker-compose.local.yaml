@@ -33,3 +33,8 @@ services:
     container_name: beyla-data
     ports:
       - "27017:27017"
+    volumes:
+      - beyla_data_volume:/data/db
+
+volumes:
+  beyla_data_volume:
